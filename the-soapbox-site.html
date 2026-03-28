@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The SOAP Box</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:   #07060f;
+    --bg2:  #0c0b18;
+    --bg3:  #110f1f;
+    --bg4:  #17152a;
+    --purple: #b44fff;
+    --blue:   #3d9bff;
+    --pink:   #ff3eac;
+    --teal:   #00e5cc;
+    --purple-dim: rgba(180,79,255,0.12);
+    --blue-dim:   rgba(61,155,255,0.12);
+    --pink-dim:   rgba(255,62,172,0.12);
+    --teal-dim:   rgba(0,229,204,0.1);
+    --text:  #eceaf6;
+    --muted: #6b6880;
+    --border: rgba(255,255,255,0.07);
+    --glow-purple: 0 0 16px rgba(180,79,255,0.6), 0 0 44px rgba(180,79,255,0.22);
+    --glow-blue:   0 0 16px rgba(61,155,255,0.6), 0 0 44px rgba(61,155,255,0.22);
+    --glow-pink:   0 0 16px rgba(255,62,172,0.6), 0 0 44px rgba(255,62,172,0.22);
+    --glow-teal:   0 0 16px rgba(0,229,204,0.5),  0 0 44px rgba(0,229,204,0.18);
+  }
+
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+  .page { display: none; min-height: 100vh; animation: fadein 0.4s ease; }
+  .page.active { display: block; }
+  @keyframes fadein { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+
+  body::before {
+    content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px);
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 200;
+    background: rgba(7,6,15,0.92); backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 2rem; height: 62px; gap: 1rem;
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.55rem; letter-spacing: 0.12em;
+    cursor: pointer; flex-shrink: 0;
+    background: linear-gradient(90deg, var(--purple), var(--blue), var(--pink));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    filter: drop-shadow(0 0 8px rgba(180,79,255,0.5));
+  }
+  .nav-subtitle {
+    font-family: 'Space Mono', monospace; font-size: 0.52rem; letter-spacing: 0.16em;
+    color: var(--muted); text-transform: uppercase;
+    border-left: 1px solid var(--border); padding-left: 1rem;
+  }
+  .nav-links { display: flex; gap: 0.2rem; margin-left: auto; }
+  .nav-btn {
+    font-family: 'Space Mono', monospace; font-size: 0.6rem; letter-spacing: 0.08em;
+    color: var(--muted); background: none; border: 1px solid transparent;
+    padding: 5px 13px; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .nav-btn:hover { color: var(--text); border-color: var(--border); background: var(--bg3); }
+  .nav-btn.ap { color: var(--purple); border-color: rgba(180,79,255,0.35); background: var(--purple-dim); }
+  .nav-btn.ab { color: var(--blue);   border-color: rgba(61,155,255,0.35);  background: var(--blue-dim); }
+  .nav-btn.apk{ color: var(--pink);   border-color: rgba(255,62,172,0.35);  background: var(--pink-dim); }
+  .nav-btn.at { color: var(--teal);   border-color: rgba(0,229,204,0.3);    background: var(--teal-dim); }
+
+  /* ── SHARED ── */
+  .section-wrap { max-width: 1100px; margin: 0 auto; padding: 5rem 2rem; position: relative; z-index: 1; }
+  .page-header { position: relative; overflow: hidden; padding: 5rem 2rem 4rem; border-bottom: 1px solid var(--border); background: var(--bg2); }
+  .page-header-bg { position: absolute; inset: 0; }
+  .ph-purple { background: radial-gradient(ellipse 70% 120% at 80% 50%, rgba(180,79,255,0.1) 0%, transparent 55%); }
+  .ph-blue   { background: radial-gradient(ellipse 70% 120% at 20% 50%, rgba(61,155,255,0.1) 0%, transparent 55%); }
+  .ph-pink   { background: radial-gradient(ellipse 70% 120% at 50% 20%, rgba(255,62,172,0.09) 0%, transparent 55%); }
+  .ph-teal   { background: radial-gradient(ellipse 70% 120% at 70% 60%, rgba(0,229,204,0.08) 0%, transparent 55%); }
+  .page-header .section-wrap { padding: 0; }
+
+  .eyebrow { font-family: 'Space Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 10px; margin-bottom: 0.85rem; }
+  .eyebrow::before { content: ''; display: inline-block; width: 20px; height: 1px; }
+  .eyebrow.ep::before  { background: var(--purple); }
+  .eyebrow.eb::before  { background: var(--blue); }
+  .eyebrow.epk::before { background: var(--pink); }
+  .eyebrow.et::before  { background: var(--teal); }
+
+  .section-h { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.8rem, 6vw, 5rem); letter-spacing: 0.04em; line-height: 1; margin-bottom: 1rem; }
+  .grad-purple { background: linear-gradient(90deg,var(--purple),var(--pink)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .grad-blue   { background: linear-gradient(90deg,var(--blue),var(--purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .grad-pink   { background: linear-gradient(90deg,var(--pink),var(--purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .grad-teal   { background: linear-gradient(90deg,var(--teal),var(--blue));   -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+  /* ── FOOTER ── */
+  footer { border-top: 1px solid var(--border); padding: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; background: var(--bg2); position: relative; z-index: 1; }
+  .footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; letter-spacing: 0.12em; background: linear-gradient(90deg, var(--purple), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .footer-text { font-family: 'Space Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .footer-links a { font-family: 'Space Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color 0.2s; cursor: pointer; }
+  .footer-links a:hover { color: var(--text); }
+
+  /* ── PULSE DOT ── */
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.45;transform:scale(0.65)} }
+  .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; animation: pulse 2.2s ease-in-out infinite; flex-shrink: 0; }
+  .dot-p { background: var(--purple); box-shadow: var(--glow-purple); }
+
+  /* ════════════════════════════════
+     HOME PAGE
+  ════════════════════════════════ */
+  .hero {
+    position: relative; overflow: hidden;
+    min-height: calc(100vh - 62px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 4rem 2rem 2rem;
+  }
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 55% 55% at 50% 40%, rgba(180,79,255,0.1) 0%, transparent 65%),
+      radial-gradient(ellipse 35% 30% at 15% 15%, rgba(61,155,255,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 30% 25% at 85% 80%, rgba(255,62,172,0.07) 0%, transparent 60%);
+  }
+  .hero-grid {
+    position: absolute; inset: 0; z-index: 0;
+    background-image: linear-gradient(rgba(180,79,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(61,155,255,0.035) 1px, transparent 1px);
+    background-size: 52px 52px;
+    mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 10%, transparent 75%);
+  }
+  .hero-content { position: relative; z-index: 1; max-width: 860px; width: 100%; }
+
+  .soap-badge {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-family: 'Space Mono', monospace; font-size: 0.58rem; letter-spacing: 0.18em;
+    color: var(--muted); text-transform: uppercase;
+    border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03);
+    padding: 7px 18px; border-radius: 100px; margin-bottom: 2rem;
+  }
+  .soap-letter { font-size: 0.68rem; font-weight: 700; }
+  .soap-letter.s  { color: var(--purple); }
+  .soap-letter.o  { color: var(--blue); }
+  .soap-letter.a  { color: var(--pink); }
+  .soap-letter.p2 { color: var(--teal); }
+  .soap-sep { opacity: 0.22; }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4.5rem, 13vw, 10rem); line-height: 0.88; letter-spacing: 0.03em; margin-bottom: 0.35em;
+  }
+  .hero-title .the { color: var(--muted); display: block; font-size: 0.45em; letter-spacing: 0.25em; margin-bottom: 0.1em; }
+  .hero-title .soap { display: block; background: linear-gradient(100deg, var(--purple) 0%, var(--blue) 50%, var(--pink) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 20px rgba(180,79,255,0.4)); }
+  .hero-title .box { color: var(--text); display: block; }
+
+  .hero-sub { font-weight: 300; font-size: 1rem; color: var(--muted); line-height: 1.75; max-width: 480px; margin: 0 auto 3rem; }
+  .hero-sub em { color: var(--text); font-style: normal; font-weight: 400; }
+
+  /* ── NEON DIVIDER ── */
+  .neon-divider {
+    position: relative; width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--purple) 25%, var(--blue) 50%, var(--pink) 75%, transparent 100%);
+    box-shadow: 0 0 12px rgba(180,79,255,0.5), 0 0 28px rgba(61,155,255,0.3), 0 0 48px rgba(255,62,172,0.2);
+    z-index: 2;
+  }
+  .neon-divider::before {
+    content: ''; position: absolute; inset: 0;
+    background: inherit;
+    filter: blur(6px);
+    opacity: 0.7;
+  }
+
+  /* ── BELOW-FOLD SECTION ── */
+  .below-fold {
+    background: var(--bg2); position: relative; z-index: 1;
+    padding: 4rem 2rem 5rem;
+  }
+  .below-fold-inner {
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 340px 1fr; gap: 3rem; align-items: start;
+  }
+  @media (max-width: 900px) { .below-fold-inner { grid-template-columns: 1fr; } }
+
+  /* ── CAROUSEL ── */
+  .carousel-wrap { position: relative; }
+  .carousel-label {
+    font-family: 'Space Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--muted);
+    display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem;
+  }
+  .carousel-label::before { content: ''; display: inline-block; width: 20px; height: 1px; background: linear-gradient(90deg, var(--purple), var(--pink)); }
+
+  .carousel-track {
+    display: flex; flex-direction: column; gap: 0.75rem;
+  }
+
+  .ov-card {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 14px;
+    padding: 1.5rem 1.4rem; cursor: pointer; transition: all 0.25s;
+    text-align: left; position: relative; overflow: hidden;
+    display: flex; flex-direction: column; gap: 0.45rem;
+    border-left: 3px solid transparent;
+  }
+  .ov-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .ov-card.cp::before  { background: linear-gradient(90deg, transparent, var(--purple), transparent); }
+  .ov-card.cb::before  { background: linear-gradient(90deg, transparent, var(--blue),   transparent); }
+  .ov-card.cpk::before { background: linear-gradient(90deg, transparent, var(--pink),   transparent); }
+  .ov-card.ct::before  { background: linear-gradient(90deg, transparent, var(--teal),   transparent); }
+
+  .ov-card.active { background: var(--bg4); }
+  .ov-card.active::before { opacity: 1; }
+  .ov-card.active.cp  { border-left-color: var(--purple); }
+  .ov-card.active.cb  { border-left-color: var(--blue); }
+  .ov-card.active.cpk { border-left-color: var(--pink); }
+  .ov-card.active.ct  { border-left-color: var(--teal); }
+
+  .ov-card:hover { background: var(--bg4); }
+  .ov-card:hover::before { opacity: 1; }
+
+  .ov-card-top { display: flex; align-items: center; gap: 12px; }
+  .ov-letter {
+    font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; line-height: 1;
+    letter-spacing: 0.04em; flex-shrink: 0; opacity: 0.5; transition: opacity 0.2s;
+  }
+  .ov-card.active .ov-letter, .ov-card:hover .ov-letter { opacity: 1; }
+  .ov-card.cp  .ov-letter { color: var(--purple); }
+  .ov-card.cb  .ov-letter { color: var(--blue); }
+  .ov-card.cpk .ov-letter { color: var(--pink); }
+  .ov-card.ct  .ov-letter { color: var(--teal); }
+
+  .ov-card-meta { display: flex; flex-direction: column; gap: 3px; }
+  .ov-tag {
+    font-family: 'Space Mono', monospace; font-size: 0.55rem; letter-spacing: 0.12em;
+    text-transform: uppercase; display: inline-block;
+  }
+  .ov-card.cp  .ov-tag { color: var(--purple); }
+  .ov-card.cb  .ov-tag { color: var(--blue); }
+  .ov-card.cpk .ov-tag { color: var(--pink); }
+  .ov-card.ct  .ov-tag { color: var(--teal); }
+
+  .ov-title {
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; letter-spacing: 0.06em; line-height: 1;
+    color: var(--text);
+  }
+  .ov-desc-short { font-size: 0.75rem; color: var(--muted); line-height: 1.5; margin-top: 0.3rem; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 16px;
+    padding: 2.25rem 2rem; position: sticky; top: 82px;
+    transition: all 0.35s ease;
+  }
+  .sidebar-letter {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 6rem; line-height: 1; letter-spacing: 0.04em;
+    display: block; margin-bottom: 0.25rem;
+    transition: color 0.35s, text-shadow 0.35s;
+  }
+  .sidebar-tag {
+    font-family: 'Space Mono', monospace; font-size: 0.6rem; letter-spacing: 0.16em;
+    text-transform: uppercase; padding: 4px 12px; border-radius: 100px;
+    display: inline-block; margin-bottom: 1rem;
+    transition: all 0.35s;
+  }
+  .sidebar-title {
+    font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 0.05em;
+    line-height: 1.05; margin-bottom: 0.85rem;
+    transition: color 0.35s;
+  }
+  .sidebar-desc {
+    font-size: 0.88rem; color: var(--muted); line-height: 1.75; margin-bottom: 1.5rem;
+  }
+  .sidebar-preview {
+    padding: 1rem 1.1rem; border-radius: 10px; margin-bottom: 1.5rem;
+    font-size: 0.78rem; line-height: 1.6; color: var(--muted);
+    border: 1px solid var(--border);
+    transition: border-color 0.35s, background 0.35s;
+  }
+  .sidebar-preview strong { color: var(--text); font-weight: 500; }
+  .sidebar-cta {
+    display: block; width: 100%; padding: 12px;
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    border-radius: 8px; cursor: pointer; transition: all 0.25s;
+    border: 1px solid; background: transparent; text-align: center;
+  }
+
+  /* sidebar color states */
+  .sidebar.s-purple .sidebar-letter { color: var(--purple); text-shadow: var(--glow-purple); }
+  .sidebar.s-purple .sidebar-tag    { color: var(--purple); background: var(--purple-dim); border: 1px solid rgba(180,79,255,0.25); }
+  .sidebar.s-purple .sidebar-title  { color: var(--purple); }
+  .sidebar.s-purple .sidebar-preview{ background: rgba(180,79,255,0.04); border-color: rgba(180,79,255,0.2); }
+  .sidebar.s-purple .sidebar-cta    { color: var(--purple); border-color: rgba(180,79,255,0.35); background: var(--purple-dim); }
+  .sidebar.s-purple .sidebar-cta:hover { box-shadow: var(--glow-purple); }
+
+  .sidebar.s-blue .sidebar-letter { color: var(--blue); text-shadow: var(--glow-blue); }
+  .sidebar.s-blue .sidebar-tag    { color: var(--blue); background: var(--blue-dim); border: 1px solid rgba(61,155,255,0.25); }
+  .sidebar.s-blue .sidebar-title  { color: var(--blue); }
+  .sidebar.s-blue .sidebar-preview{ background: rgba(61,155,255,0.04); border-color: rgba(61,155,255,0.2); }
+  .sidebar.s-blue .sidebar-cta    { color: var(--blue); border-color: rgba(61,155,255,0.35); background: var(--blue-dim); }
+  .sidebar.s-blue .sidebar-cta:hover { box-shadow: var(--glow-blue); }
+
+  .sidebar.s-pink .sidebar-letter { color: var(--pink); text-shadow: var(--glow-pink); }
+  .sidebar.s-pink .sidebar-tag    { color: var(--pink); background: var(--pink-dim); border: 1px solid rgba(255,62,172,0.25); }
+  .sidebar.s-pink .sidebar-title  { color: var(--pink); }
+  .sidebar.s-pink .sidebar-preview{ background: rgba(255,62,172,0.04); border-color: rgba(255,62,172,0.2); }
+  .sidebar.s-pink .sidebar-cta    { color: var(--pink); border-color: rgba(255,62,172,0.35); background: var(--pink-dim); }
+  .sidebar.s-pink .sidebar-cta:hover { box-shadow: var(--glow-pink); }
+
+  .sidebar.s-teal .sidebar-letter { color: var(--teal); text-shadow: var(--glow-teal); }
+  .sidebar.s-teal .sidebar-tag    { color: var(--teal); background: var(--teal-dim); border: 1px solid rgba(0,229,204,0.2); }
+  .sidebar.s-teal .sidebar-title  { color: var(--teal); }
+  .sidebar.s-teal .sidebar-preview{ background: rgba(0,229,204,0.04); border-color: rgba(0,229,204,0.18); }
+  .sidebar.s-teal .sidebar-cta    { color: var(--teal); border-color: rgba(0,229,204,0.3); background: var(--teal-dim); }
+  .sidebar.s-teal .sidebar-cta:hover { box-shadow: var(--glow-teal); }
+
+  /* ════════════════════════════════
+     S — THE STATIC (NEWSLETTER)
+  ════════════════════════════════ */
+  .newsletter-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; max-width: 960px; margin: 0 auto; }
+  @media (max-width: 720px) { .newsletter-wrap { grid-template-columns: 1fr; } }
+
+  .archive-list { display: flex; flex-direction: column; gap: 1rem; }
+  .archive-item { background: var(--bg3); border: 1px solid var(--border); border-left: 2px solid rgba(180,79,255,0.25); border-radius: 10px; padding: 1.25rem; cursor: pointer; transition: all 0.2s; }
+  .archive-item:hover { border-left-color: var(--purple); background: var(--bg4); }
+  .archive-meta { font-family: 'Space Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; color: var(--purple); margin-bottom: 0.4rem; text-transform: uppercase; }
+  .archive-title { font-weight: 500; font-size: 0.9rem; margin-bottom: 0.35rem; }
+  .archive-snippet { font-size: 0.77rem; color: var(--muted); line-height: 1.55; }
+
+  .signup-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; position: sticky; top: 82px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+  .signup-box h3 { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 0.07em; background: linear-gradient(90deg, var(--purple), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 10px rgba(180,79,255,0.3)); margin-bottom: 0.5rem; }
+  .signup-box p { font-size: 0.83rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.65; }
+  .field-group { display: flex; flex-direction: column; gap: 0.75rem; }
+  .field-group input, .field-group select { width: 100%; background: var(--bg2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 11px 14px; font-size: 0.85rem; font-family: 'Syne', sans-serif; outline: none; transition: border-color 0.2s; }
+  .field-group input:focus, .field-group select:focus { border-color: rgba(180,79,255,0.4); }
+  .field-group input::placeholder { color: var(--muted); }
+  .field-group select option { background: var(--bg2); }
+  .submit-btn { width: 100%; padding: 12px; background: var(--purple-dim); border: 1px solid rgba(180,79,255,0.3); border-radius: 8px; color: var(--purple); font-family: 'Space Mono', monospace; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; margin-top: 0.5rem; }
+  .submit-btn:hover { box-shadow: var(--glow-purple); border-color: rgba(180,79,255,0.5); }
+  .perks-list { list-style: none; margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .perks-list li { font-size: 0.77rem; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .perks-list li::before { content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; background: var(--purple); }
+
+  /* ════════════════════════════════
+     O — OFF-DUTY (MERCH)
+  ════════════════════════════════ */
+  .merch-filter-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .filter-pill { font-family: 'Space Mono', monospace; font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 5px 16px; border-radius: 100px; border: 1px solid var(--border); background: none; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+  .filter-pill:hover { border-color: rgba(61,155,255,0.3); color: var(--text); }
+  .filter-pill.active { border-color: var(--blue); color: var(--blue); background: var(--blue-dim); }
+
+  .merch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.25rem; }
+  .merch-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: transform 0.25s, border-color 0.25s; cursor: pointer; }
+  .merch-card:hover { transform: translateY(-4px); border-color: rgba(61,155,255,0.3); }
+  .merch-img { width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 5rem; background: var(--bg2); position: relative; }
+  .merch-img::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(61,155,255,0.07), transparent 70%); }
+  .merch-info { padding: 1.25rem; }
+  .merch-cat { font-family: 'Space Mono', monospace; font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); margin-bottom: 0.4rem; }
+  .merch-name { font-weight: 500; font-size: 0.95rem; margin-bottom: 0.5rem; }
+  .merch-price { font-family: 'Space Mono', monospace; font-size: 0.85rem; background: linear-gradient(90deg, var(--blue), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .merch-btn { display: block; width: 100%; margin-top: 1rem; padding: 9px 0; background: var(--blue-dim); border: 1px solid rgba(61,155,255,0.28); border-radius: 7px; color: var(--blue); font-family: 'Space Mono', monospace; font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .merch-btn:hover { background: rgba(61,155,255,0.2); box-shadow: var(--glow-blue); }
+
+  /* ════════════════════════════════
+     A — AGAINST MEDICAL ADVICE (HUB)
+  ════════════════════════════════ */
+  .hub-featured { background: linear-gradient(135deg, rgba(255,62,172,0.05), rgba(61,155,255,0.03), rgba(180,79,255,0.05)); border: 1px solid rgba(255,62,172,0.18); border-radius: 16px; padding: 2.25rem; margin-bottom: 2.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: center; }
+  @media (max-width: 640px) { .hub-featured { grid-template-columns: 1fr; } }
+  .hub-featured h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; letter-spacing: 0.05em; line-height: 1.05; background: linear-gradient(100deg, var(--pink), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 12px rgba(255,62,172,0.35)); }
+  .hub-featured p { font-size: 0.86rem; color: var(--muted); line-height: 1.7; margin-top: 0.75rem; }
+  .hub-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .hub-stat { background: rgba(0,0,0,0.35); border-radius: 10px; padding: 1rem; text-align: center; border: 1px solid var(--border); }
+  .hub-stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 0.04em; background: linear-gradient(90deg, var(--pink), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hub-stat-label { font-family: 'Space Mono', monospace; font-size: 0.56rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+  .hub-access-btn { display: inline-block; margin-top: 1.5rem; padding: 10px 22px; background: var(--pink-dim); border: 1px solid rgba(255,62,172,0.3); border-radius: 8px; color: var(--pink); font-family: 'Space Mono', monospace; font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .hub-access-btn:hover { background: rgba(255,62,172,0.18); box-shadow: var(--glow-pink); }
+
+  .hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+  .hub-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 13px; padding: 1.75rem; cursor: pointer; transition: all 0.25s; display: flex; flex-direction: column; gap: 0.75rem; }
+  .hub-card:hover { transform: translateY(-3px); border-color: rgba(255,62,172,0.25); background: var(--bg4); }
+  .hub-card-top { display: flex; align-items: flex-start; justify-content: space-between; }
+  .hub-icon { width: 44px; height: 44px; border-radius: 10px; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; background: rgba(255,62,172,0.08); border: 1px solid rgba(255,62,172,0.15); }
+  .hub-tag { font-family: 'Space Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 10px; border-radius: 100px; background: rgba(180,79,255,0.1); color: var(--purple); border: 1px solid rgba(180,79,255,0.22); }
+  .hub-card h3 { font-size: 1rem; font-weight: 500; }
+  .hub-card p { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+  .hub-link { font-family: 'Space Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--pink); opacity: 0.6; transition: opacity 0.2s; margin-top: auto; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+  .hub-card:hover .hub-link { opacity: 1; }
+
+  /* ════════════════════════════════
+     P — PATCH ME THROUGH (CONTACT)
+  ════════════════════════════════ */
+  .contact-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+  @media (max-width: 720px) { .contact-wrap { grid-template-columns: 1fr; } }
+
+  .contact-intro { font-size: 0.9rem; color: var(--muted); line-height: 1.8; margin-bottom: 2rem; max-width: 480px; }
+  .contact-intro em { color: var(--text); font-style: normal; }
+
+  .social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 2rem; }
+  .social-card {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.25rem 1.1rem; cursor: pointer; transition: all 0.22s;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .social-card:hover { background: var(--bg4); border-color: rgba(0,229,204,0.3); transform: translateY(-2px); }
+  .social-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .social-name { font-weight: 500; font-size: 0.88rem; margin-bottom: 2px; }
+  .social-handle { font-family: 'Space Mono', monospace; font-size: 0.62rem; color: var(--teal); letter-spacing: 0.06em; }
+
+  .contact-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+  .contact-box h3 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 0.07em; background: linear-gradient(90deg, var(--teal), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 10px rgba(0,229,204,0.3)); margin-bottom: 0.5rem; }
+  .contact-box p { font-size: 0.83rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.65; }
+  .contact-field { display: flex; flex-direction: column; gap: 0.75rem; }
+  .contact-field input, .contact-field select, .contact-field textarea { width: 100%; background: var(--bg2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 11px 14px; font-size: 0.85rem; font-family: 'Syne', sans-serif; outline: none; transition: border-color 0.2s; resize: vertical; }
+  .contact-field input:focus, .contact-field select:focus, .contact-field textarea:focus { border-color: rgba(0,229,204,0.4); }
+  .contact-field input::placeholder, .contact-field textarea::placeholder { color: var(--muted); }
+  .contact-field select option { background: var(--bg2); }
+  .contact-submit { width: 100%; padding: 12px; background: var(--teal-dim); border: 1px solid rgba(0,229,204,0.3); border-radius: 8px; color: var(--teal); font-family: 'Space Mono', monospace; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; margin-top: 0.5rem; }
+  .contact-submit:hover { box-shadow: var(--glow-teal); border-color: rgba(0,229,204,0.5); }
+
+  .info-blocks { display: flex; flex-direction: column; gap: 0.85rem; margin-top: 2rem; }
+  .info-block { background: var(--bg3); border: 1px solid var(--border); border-left: 2px solid rgba(0,229,204,0.3); border-radius: 10px; padding: 1rem 1.25rem; }
+  .info-block-label { font-family: 'Space Mono', monospace; font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.3rem; }
+  .info-block-val { font-size: 0.88rem; color: var(--text); font-weight: 500; }
+  .info-block-sub { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">THE SOAP BOX</div>
+  <div class="nav-subtitle">Olympic Ambulance · Off Duty</div>
+  <div class="nav-links">
+    <button class="nav-btn" id="nav-static"   onclick="showPage('static')">S · The Static</button>
+    <button class="nav-btn" id="nav-merch"    onclick="showPage('merch')">O · Off-Duty</button>
+    <button class="nav-btn" id="nav-ama"      onclick="showPage('ama')">A · AMA</button>
+    <button class="nav-btn" id="nav-patch"    onclick="showPage('patch')">P · Patch Me Through</button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════
+     HOME — OVERVIEW
+══════════════════════════════ -->
+<div class="page active" id="page-home">
+
+  <!-- ABOVE THE FOLD -->
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+      <div class="soap-badge">
+        <span class="dot dot-p"></span>
+        <span class="soap-letter s">S</span><span class="soap-sep">·</span>
+        <span class="soap-letter o">O</span><span class="soap-sep">·</span>
+        <span class="soap-letter a">A</span><span class="soap-sep">·</span>
+        <span class="soap-letter p2">P</span>
+        <span class="soap-sep">— Olympic Ambulance · Off Duty</span>
+      </div>
+      <div class="hero-title">
+        <span class="the">The</span>
+        <span class="soap">SOAP</span>
+        <span class="box">Box.</span>
+      </div>
+      <p class="hero-sub">
+        Your after-hours corner for <em>EMS culture</em>, field knowledge,
+        off-duty gear, and community. Stay curious. Stay covered.
+      </p>
+    </div>
+  </div>
+
+  <!-- NEON DIVIDER -->
+  <div class="neon-divider"></div>
+
+  <!-- BELOW THE FOLD — carousel + sidebar -->
+  <div class="below-fold">
+    <div class="below-fold-inner">
+
+      <!-- LEFT: CAROUSEL -->
+      <div class="carousel-wrap">
+        <div class="carousel-label">Explore the SOAP Box</div>
+        <div class="carousel-track" id="carousel-track">
+
+          <div class="ov-card cp active" data-idx="0" onclick="setSlide(0)">
+            <div class="ov-card-top">
+              <span class="ov-letter">S</span>
+              <div class="ov-card-meta">
+                <span class="ov-tag">Newsletter</span>
+                <div class="ov-title">The Static</div>
+              </div>
+            </div>
+            <div class="ov-desc-short">Weekly field notes, protocol updates, and EMS intel — no spam, no suits.</div>
+          </div>
+
+          <div class="ov-card cb" data-idx="1" onclick="setSlide(1)">
+            <div class="ov-card-top">
+              <span class="ov-letter">O</span>
+              <div class="ov-card-meta">
+                <span class="ov-tag">Merch</span>
+                <div class="ov-title">Off-Duty</div>
+              </div>
+            </div>
+            <div class="ov-desc-short">Apparel, patches, stickers, and gear for life off the rig.</div>
+          </div>
+
+          <div class="ov-card cpk" data-idx="2" onclick="setSlide(2)">
+            <div class="ov-card-top">
+              <span class="ov-letter">A</span>
+              <div class="ov-card-meta">
+                <span class="ov-tag">Info Hub</span>
+                <div class="ov-title">Against Medical Advice</div>
+              </div>
+            </div>
+            <div class="ov-desc-short">Protocols, drug references, CE listings, and field-tested knowledge.</div>
+          </div>
+
+          <div class="ov-card ct" data-idx="3" onclick="setSlide(3)">
+            <div class="ov-card-top">
+              <span class="ov-letter">P</span>
+              <div class="ov-card-meta">
+                <span class="ov-tag">Connect</span>
+                <div class="ov-title">Patch Me Through</div>
+              </div>
+            </div>
+            <div class="ov-desc-short">Socials, direct contact, and all the ways to find the crew.</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT: SIDEBAR -->
+      <div class="sidebar s-purple" id="home-sidebar">
+        <span class="sidebar-letter" id="sb-letter">S</span>
+        <span class="sidebar-tag"   id="sb-tag">Newsletter</span>
+        <div class="sidebar-title"  id="sb-title">The Static</div>
+        <div class="sidebar-desc"   id="sb-desc">The weekly transmission from the field. Protocol changes, CE opportunities, burnout survival tips, street medicine deep-dives, and the stuff nobody writes down in the chart. Delivered off-shift, written by providers, for providers.</div>
+        <div class="sidebar-preview" id="sb-preview">
+          <strong>Latest issue:</strong> Mass Casualty Triage — what the new SALT updates mean for WA state providers this fall.
+        </div>
+        <button class="sidebar-cta" id="sb-cta" onclick="showPage(sidebarPages[activeSlide])">Read &amp; Subscribe →</button>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-logo">THE SOAP BOX</div>
+    <div class="footer-text">© 2025 · Olympic Ambulance · Stay Safe Out There</div>
+    <div class="footer-links">
+      <a onclick="showPage('static')">The Static</a>
+      <a onclick="showPage('merch')">Off-Duty</a>
+      <a onclick="showPage('ama')">AMA</a>
+      <a onclick="showPage('patch')">Patch Me Through</a>
+    </div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════
+     S — THE STATIC (NEWSLETTER)
+══════════════════════════════ -->
+<div class="page" id="page-static">
+  <div class="page-header">
+    <div class="page-header-bg ph-purple"></div>
+    <div class="section-wrap">
+      <div class="eyebrow ep">S · Newsletter</div>
+      <div class="section-h">The <span class="grad-purple">Static</span></div>
+      <p style="color:var(--muted);font-size:0.9rem;max-width:520px;line-height:1.7;">Protocol updates, field stories, CE opportunities, and the stuff they don't teach in class. Weekly. No spam. No suits.</p>
+    </div>
+  </div>
+  <div class="section-wrap">
+    <div class="newsletter-wrap">
+      <div>
+        <div class="eyebrow ep" style="margin-bottom:1.5rem;">Past Issues</div>
+        <div class="archive-list" id="archive-list"></div>
+      </div>
+      <div>
+        <div class="signup-box">
+          <h3>Tune In</h3>
+          <p>Join the crew getting weekly EMS intel off-shift. Real field content from real providers.</p>
+          <div class="field-group">
+            <input type="text" placeholder="First name" />
+            <input type="email" placeholder="Email address" />
+            <select>
+              <option value="" disabled selected>Your role</option>
+              <option>EMT-Basic</option>
+              <option>AEMT</option>
+              <option>Paramedic</option>
+              <option>EMT Instructor</option>
+              <option>Fire/EMS</option>
+              <option>Dispatcher</option>
+              <option>Other EMS</option>
+            </select>
+            <button class="submit-btn">Subscribe to The Static →</button>
+          </div>
+          <ul class="perks-list">
+            <li>Weekly field stories & protocol notes</li>
+            <li>CE & training opportunities</li>
+            <li>Gear reviews & community polls</li>
+            <li>Early access to merch drops</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <div class="footer-logo">THE SOAP BOX</div>
+    <div class="footer-text">© 2025 · Olympic Ambulance · Stay Safe Out There</div>
+    <div class="footer-links">
+      <a onclick="showPage('home')">Home</a>
+      <a onclick="showPage('merch')">Off-Duty</a>
+      <a onclick="showPage('ama')">AMA</a>
+      <a onclick="showPage('patch')">Patch Me Through</a>
+    </div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════
+     O — OFF-DUTY (MERCH)
+══════════════════════════════ -->
+<div class="page" id="page-merch">
+  <div class="page-header">
+    <div class="page-header-bg ph-blue"></div>
+    <div class="section-wrap">
+      <div class="eyebrow eb">O · Merch</div>
+      <div class="section-h"><span class="grad-blue">Off-Duty</span> Merch</div>
+      <p style="color:var(--muted);font-size:0.9rem;max-width:460px;line-height:1.7;">Because the job doesn't stop when the shift does. Wear it loud.</p>
+    </div>
+  </div>
+  <div class="section-wrap">
+    <div class="merch-filter-row">
+      <button class="filter-pill active" onclick="filterMerch('all',this)">All</button>
+      <button class="filter-pill" onclick="filterMerch('apparel',this)">Apparel</button>
+      <button class="filter-pill" onclick="filterMerch('accessories',this)">Accessories</button>
+      <button class="filter-pill" onclick="filterMerch('patches',this)">Patches & Stickers</button>
+      <button class="filter-pill" onclick="filterMerch('headwear',this)">Headwear</button>
+    </div>
+    <div class="merch-grid" id="merch-grid"></div>
+  </div>
+  <footer>
+    <div class="footer-logo">THE SOAP BOX</div>
+    <div class="footer-text">© 2025 · Olympic Ambulance · Stay Safe Out There</div>
+    <div class="footer-links">
+      <a onclick="showPage('home')">Home</a>
+      <a onclick="showPage('static')">The Static</a>
+      <a onclick="showPage('ama')">AMA</a>
+      <a onclick="showPage('patch')">Patch Me Through</a>
+    </div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════
+     A — AGAINST MEDICAL ADVICE (HUB)
+══════════════════════════════ -->
+<div class="page" id="page-ama">
+  <div class="page-header">
+    <div class="page-header-bg ph-pink"></div>
+    <div class="section-wrap">
+      <div class="eyebrow epk">A · Info Hub</div>
+      <div class="section-h"><span class="grad-pink">Against</span> Medical Advice</div>
+      <p style="color:var(--muted);font-size:0.9rem;max-width:520px;line-height:1.7;">Because knowing your stuff is the best revenge. Protocols, training resources, street medicine guides, and field-tested knowledge — all in one place.</p>
+    </div>
+  </div>
+  <div class="section-wrap">
+    <div class="hub-featured">
+      <div>
+        <div class="eyebrow epk" style="margin-bottom:0.75rem;">Featured Resource</div>
+        <h2>Stop the Bleed<br>Field Guide</h2>
+        <p>Everything you need to know about hemorrhage control — from tourniquet application to wound packing. Printable reference cards included.</p>
+        <button class="hub-access-btn">Access Guide →</button>
+      </div>
+      <div class="hub-stats">
+        <div class="hub-stat"><div class="hub-stat-num">47</div><div class="hub-stat-label">Resources</div></div>
+        <div class="hub-stat"><div class="hub-stat-num">12</div><div class="hub-stat-label">Protocols</div></div>
+        <div class="hub-stat"><div class="hub-stat-num">8</div><div class="hub-stat-label">CE Credits</div></div>
+        <div class="hub-stat"><div class="hub-stat-num">24/7</div><div class="hub-stat-label">Access</div></div>
+      </div>
+    </div>
+    <div class="hub-grid" id="hub-grid"></div>
+  </div>
+  <footer>
+    <div class="footer-logo">THE SOAP BOX</div>
+    <div class="footer-text">© 2025 · Olympic Ambulance · Stay Safe Out There</div>
+    <div class="footer-links">
+      <a onclick="showPage('home')">Home</a>
+      <a onclick="showPage('static')">The Static</a>
+      <a onclick="showPage('merch')">Off-Duty</a>
+      <a onclick="showPage('patch')">Patch Me Through</a>
+    </div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════
+     P — PATCH ME THROUGH (CONTACT)
+══════════════════════════════ -->
+<div class="page" id="page-patch">
+  <div class="page-header">
+    <div class="page-header-bg ph-teal"></div>
+    <div class="section-wrap">
+      <div class="eyebrow et">P · Connect</div>
+      <div class="section-h"><span class="grad-teal">Patch Me</span> Through</div>
+      <p style="color:var(--muted);font-size:0.9rem;max-width:520px;line-height:1.7;">Find us on the platforms, flag us down on socials, or send a direct transmission. We're on the air.</p>
+    </div>
+  </div>
+  <div class="section-wrap">
+    <div class="contact-wrap">
+      <div>
+        <div class="eyebrow et" style="margin-bottom:1rem;">Find Us On</div>
+        <div class="social-grid">
+          <div class="social-card">
+            <span class="social-icon">📸</span>
+            <div>
+              <div class="social-name">Instagram</div>
+              <div class="social-handle">@olympicambulance</div>
+            </div>
+          </div>
+          <div class="social-card">
+            <span class="social-icon">👥</span>
+            <div>
+              <div class="social-name">Facebook</div>
+              <div class="social-handle">Olympic Ambulance</div>
+            </div>
+          </div>
+          <div class="social-card">
+            <span class="social-icon">🎵</span>
+            <div>
+              <div class="social-name">TikTok</div>
+              <div class="social-handle">@olympicambulance</div>
+            </div>
+          </div>
+          <div class="social-card">
+            <span class="social-icon">🐦</span>
+            <div>
+              <div class="social-name">X / Twitter</div>
+              <div class="social-handle">@olympicems</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="eyebrow et" style="margin-bottom:1rem; margin-top:2rem;">Direct Line</div>
+        <div class="info-blocks">
+          <div class="info-block">
+            <div class="info-block-label">Station</div>
+            <div class="info-block-val">Olympic Ambulance</div>
+            <div class="info-block-sub">Port Orchard, WA</div>
+          </div>
+          <div class="info-block">
+            <div class="info-block-label">Email</div>
+            <div class="info-block-val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="167f78707956797a6f7b667f75777b74637a777875733875797b">[email&#160;protected]</a></div>
+            <div class="info-block-sub">Non-emergency inquiries only</div>
+          </div>
+          <div class="info-block">
+            <div class="info-block-label">Merch & Orders</div>
+            <div class="info-block-val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="55383027363d153a392c38253c363438372039343b36307b363a38">[email&#160;protected]</a></div>
+            <div class="info-block-sub">Order questions, sizing, returns</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="contact-box">
+          <h3>Send a Transmission</h3>
+          <p>Got a question, a story tip for The Static, or just want to reach out? Drop it here.</p>
+          <div class="contact-field">
+            <input type="text" placeholder="Your name" />
+            <input type="email" placeholder="Email address" />
+            <select>
+              <option value="" disabled selected>What's this about?</option>
+              <option>General question</option>
+              <option>Newsletter — The Static</option>
+              <option>Merch / order issue</option>
+              <option>Story tip or submission</option>
+              <option>Info Hub resource request</option>
+              <option>Just saying hey</option>
+            </select>
+            <textarea rows="5" placeholder="Your message..."></textarea>
+            <button class="contact-submit">Send Transmission →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <div class="footer-logo">THE SOAP BOX</div>
+    <div class="footer-text">© 2025 · Olympic Ambulance · Stay Safe Out There</div>
+    <div class="footer-links">
+      <a onclick="showPage('home')">Home</a>
+      <a onclick="showPage('static')">The Static</a>
+      <a onclick="showPage('merch')">Off-Duty</a>
+      <a onclick="showPage('ama')">AMA</a>
+    </div>
+  </footer>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+/* ── navigation ── */
+const pageColors = { static:'ap', merch:'ab', ama:'apk', patch:'at' };
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => { b.className = 'nav-btn'; });
+  document.getElementById('page-' + id).classList.add('active');
+  const navBtn = document.getElementById('nav-' + id);
+  if (navBtn && pageColors[id]) navBtn.classList.add(pageColors[id]);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ── merch data ── */
+const merch = [
+  { cat:'apparel',     icon:'🧥', name:'SOAP Box Duty Hoodie',    desc:'Heavyweight fleece. Embroidered EMS star.', price:'$52', tag:'Bestseller' },
+  { cat:'apparel',     icon:'👕', name:'Night Shift Tee',          desc:'Vintage wash, neon star-of-life graphic.',  price:'$28' },
+  { cat:'headwear',    icon:'🧢', name:'Off Duty Snapback',        desc:'Structured cap. Embroidered logo front.',   price:'$34' },
+  { cat:'patches',     icon:'🩹', name:'Thin White Line Patch',    desc:'Embroidered morale patch, hook-back.',      price:'$8' },
+  { cat:'accessories', icon:'💊', name:'Drug Box Sticker Pack',    desc:'6-sticker set. EMS meme & pride designs.',  price:'$10' },
+  { cat:'apparel',     icon:'🦺', name:'Crew Quarter-Zip',         desc:'Athletic fit. Chest logo. Multiple colors.', price:'$58' },
+  { cat:'patches',     icon:'⭐', name:'SOL Glow Patch',           desc:'Glow-in-the-dark Star of Life, 3" PVC.',    price:'$9' },
+  { cat:'accessories', icon:'☕', name:'SOAP Box Tumbler',         desc:'30oz insulated. EMS logo laser etched.',    price:'$32' },
+  { cat:'headwear',    icon:'🎓', name:'EMS Flex-Fit Cap',         desc:'Stretch fit, low-profile. Structured crown.', price:'$30' },
+];
+let activeFilter = 'all';
+function filterMerch(cat, el) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderMerch();
+}
+function renderMerch() {
+  const items = activeFilter === 'all' ? merch : merch.filter(m => m.cat === activeFilter);
+  document.getElementById('merch-grid').innerHTML = items.map(m => `
+    <div class="merch-card">
+      <div class="merch-img">${m.icon}</div>
+      <div class="merch-info">
+        <div class="merch-cat">${m.cat}${m.tag ? ' · <span style="color:var(--pink)">' + m.tag + '</span>' : ''}</div>
+        <div class="merch-name">${m.name}</div>
+        <div class="merch-price">${m.price}</div>
+        <button class="merch-btn">Add to Cart</button>
+      </div>
+    </div>`).join('');
+}
+
+/* ── newsletter archive ── */
+const issues = [
+  { date:'Jun 2025', vol:'Vol. 12', title:'Mass Casualty Triage: What the New SALT Updates Mean for You', snippet:'A breakdown of protocol changes hitting WA state this fall and what to expect in the field.' },
+  { date:'May 2025', vol:'Vol. 11', title:'Burnout in the Box: Real Talk from the Field', snippet:'EMTs across the PNW share how they are navigating compassion fatigue and what is helping.' },
+  { date:'Apr 2025', vol:'Vol. 10', title:'Street Medicine 101: Working the Margins', snippet:'How some services are reaching unhoused patients and what skills transfer from traditional EMS.' },
+  { date:'Mar 2025', vol:'Vol. 9',  title:'Chemical Exposure Scenarios — New Training Frameworks', snippet:'Updated decon protocols and simulation training resources for hazmat-adjacent EMS calls.' },
+  { date:'Feb 2025', vol:'Vol. 8',  title:'Stroke Systems of Care: From Dispatch to Door', snippet:'How optimizing prehospital stroke recognition is cutting time-to-treatment in the PNW.' },
+];
+function renderArchive() {
+  document.getElementById('archive-list').innerHTML = issues.map(i => `
+    <div class="archive-item">
+      <div class="archive-meta">${i.date} · ${i.vol}</div>
+      <div class="archive-title">${i.title}</div>
+      <div class="archive-snippet">${i.snippet}</div>
+    </div>`).join('');
+}
+
+/* ── info hub ── */
+const hubCards = [
+  { icon:'🩸', tag:'Trauma',        title:'Hemorrhage Control',     desc:'Tourniquet application, wound packing, junctional bleeding. Updated for TCCC guidelines.', link:'View protocols →' },
+  { icon:'🧠', tag:'Neuro',         title:'Stroke Recognition',      desc:'BEFAST, dispatch prompts, LAMS scoring, and direct-to-CT pathways.', link:'View guide →' },
+  { icon:'💊', tag:'Pharmacology',  title:'Field Drug Reference',    desc:'Quick-access dosing cards. Sorted by situation. WA State protocols.', link:'Open reference →' },
+  { icon:'🔥', tag:'Hazmat',        title:'Chemical Exposure',       desc:'Scene safety, decon priorities, antidote protocols, and documentation essentials.', link:'View guide →' },
+  { icon:'🏕️', tag:'Street Med',    title:'Street Medicine Toolkit', desc:'Unhoused patient assessment, wound care in austere environments, frostbite/exposure.', link:'Explore toolkit →' },
+  { icon:'🎓', tag:'CE Credits',    title:'CE Opportunities',        desc:'Current continuing education listings curated for WA state EMS recertification.', link:'Find CE →' },
+  { icon:'🚨', tag:'MCI',           title:'Mass Casualty Reference', desc:'SALT triage, ICS basics, unit positioning, and communication templates.', link:'View reference →' },
+  { icon:'📋', tag:'Documentation', title:'PCR Tips & Templates',    desc:'Common documentation pitfalls, language templates, and narrative structuring.', link:'Get templates →' },
+  { icon:'❤️', tag:'Wellness',      title:'Peer Support Resources',  desc:'CISM, peer support contacts, and mental health resources for EMS in WA.', link:'Find support →' },
+];
+function renderHub() {
+  document.getElementById('hub-grid').innerHTML = hubCards.map(c => `
+    <div class="hub-card">
+      <div class="hub-card-top">
+        <div class="hub-icon">${c.icon}</div>
+        <div class="hub-tag">${c.tag}</div>
+      </div>
+      <h3>${c.title}</h3>
+      <p>${c.desc}</p>
+      <div class="hub-link">${c.link}</div>
+    </div>`).join('');
+}
+
+/* ── carousel / sidebar ── */
+const sidebarPages = ['static', 'merch', 'ama', 'patch'];
+const slides = [
+  {
+    color: 's-purple', letter: 'S', tag: 'Newsletter', title: 'The Static',
+    desc: 'The weekly transmission from the field. Protocol changes, CE opportunities, burnout survival tips, street medicine deep-dives, and the stuff nobody writes down in the chart. Delivered off-shift, written by providers, for providers.',
+    preview: '<strong>Latest issue:</strong> Mass Casualty Triage — what the new SALT updates mean for WA state providers this fall.',
+    cta: 'Read & Subscribe →'
+  },
+  {
+    color: 's-blue', letter: 'O', tag: 'Merch', title: 'Off-Duty',
+    desc: "Rep the life even when you're not on the clock. From heavyweight hoodies and vintage tees to embroidered patches and glow-in-the-dark SOL pins — gear that says you're EMS without saying a word.",
+    preview: '<strong>New drop:</strong> SOAP Box Duty Hoodie, SOL Glow Patch, and the Off Duty Snapback are live now.',
+    cta: 'Shop the Drop →'
+  },
+  {
+    color: 's-pink', letter: 'A', tag: 'Info Hub', title: 'Against Medical Advice',
+    desc: 'Because knowing your stuff is the best revenge. Protocols, field drug references, street medicine toolkits, CE listings, MCI guides, PCR templates, peer support resources — curated for WA state EMS providers.',
+    preview: '<strong>Featured:</strong> Stop the Bleed Field Guide — hemorrhage control from tourniquet application to wound packing.',
+    cta: 'Explore the Hub →'
+  },
+  {
+    color: 's-teal', letter: 'P', tag: 'Connect', title: 'Patch Me Through',
+    desc: "Find us on socials, flag us down on Instagram or TikTok, or send a direct transmission. Got a story tip for The Static, a merch question, or just want to say hey to the Olympic Ambulance crew? We're on the air.",
+    preview: '<strong>Find us:</strong> Instagram, Facebook, TikTok, and X — plus a direct contact form for the crew.',
+    cta: 'Get Connected →'
+  }
+];
+
+let activeSlide = 0;
+
+function setSlide(idx) {
+  activeSlide = idx;
+  const s = slides[idx];
+  document.querySelectorAll('.ov-card').forEach((c, i) => {
+    c.classList.toggle('active', i === idx);
+  });
+  const sb = document.getElementById('home-sidebar');
+  if (!sb) return;
+  sb.className = 'sidebar ' + s.color;
+  document.getElementById('sb-letter').textContent = s.letter;
+  document.getElementById('sb-tag').textContent    = s.tag;
+  document.getElementById('sb-title').textContent  = s.title;
+  document.getElementById('sb-desc').textContent   = s.desc;
+  document.getElementById('sb-preview').innerHTML  = s.preview;
+  document.getElementById('sb-cta').textContent    = s.cta;
+}
+
+renderMerch(); renderArchive(); renderHub();
+</script>
+</body>
+</html>
