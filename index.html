@@ -512,11 +512,11 @@
             <div class="ov-card-top">
               <span class="ov-letter">A</span>
               <div class="ov-card-meta">
-                <span class="ov-tag">Info Hub</span>
+                <span class="ov-tag">Events</span>
                 <div class="ov-title">Against Medical Advice</div>
               </div>
             </div>
-            <div class="ov-desc-short">Protocols, drug references, CE listings, and field-tested knowledge.</div>
+            <div class="ov-desc-short">Stair climbs, softball, wildland EMS, crew BBQs, and everything happening off the clock.</div>
           </div>
 
           <div class="ov-card ct" data-idx="3" onclick="setSlide(3)">
@@ -654,33 +654,53 @@
 </div>
 
 <!-- ══════════════════════════════
-     A — AGAINST MEDICAL ADVICE (HUB)
+     A — AGAINST MEDICAL ADVICE (EVENTS)
 ══════════════════════════════ -->
 <div class="page" id="page-ama">
   <div class="page-header">
     <div class="page-header-bg ph-pink"></div>
     <div class="section-wrap">
-      <div class="eyebrow epk">A · Info Hub</div>
+      <div class="eyebrow epk">A · Events & Activities</div>
       <div class="section-h"><span class="grad-pink">Against</span> Medical Advice</div>
-      <p style="color:var(--muted);font-size:0.9rem;max-width:520px;line-height:1.7;">Because knowing your stuff is the best revenge. Protocols, training resources, street medicine guides, and field-tested knowledge — all in one place.</p>
+      <p style="color:var(--muted);font-size:0.9rem;max-width:540px;line-height:1.7;">Because the best thing for you is getting out there. Upcoming events, team sign-ups, and crew activities — all in one place.</p>
     </div>
   </div>
+
   <div class="section-wrap">
-    <div class="hub-featured">
+
+    <!-- FILTER ROW -->
+    <div class="merch-filter-row" id="event-filter-row">
+      <button class="filter-pill active" onclick="filterEvents('all',this)">All Events</button>
+      <button class="filter-pill" onclick="filterEvents('fitness',this)">Fitness & Athletic</button>
+      <button class="filter-pill" onclick="filterEvents('team',this)">Team Sports</button>
+      <button class="filter-pill" onclick="filterEvents('wildland',this)">Wildland / Specialty</button>
+      <button class="filter-pill" onclick="filterEvents('community',this)">Community</button>
+      <button class="filter-pill" onclick="filterEvents('social',this)">Social</button>
+      <button class="filter-pill" onclick="filterEvents('training',this)">Training & CE</button>
+    </div>
+
+    <!-- FEATURED EVENT -->
+    <div class="hub-featured" id="event-featured">
       <div>
-        <div class="eyebrow epk" style="margin-bottom:0.75rem;">Featured Resource</div>
-        <h2>Stop the Bleed<br>Field Guide</h2>
-        <p>Everything you need to know about hemorrhage control — from tourniquet application to wound packing. Printable reference cards included.</p>
-        <button class="hub-access-btn">Access Guide →</button>
+        <div class="eyebrow epk" style="margin-bottom:0.75rem;">Featured Event</div>
+        <h2>Scott Firefighter<br>Stair Climb</h2>
+        <p>One of the most iconic first responder fitness challenges in the PNW. Climb 69 floors of Columbia Center in Kennewick, WA in full turnout gear. Olympic Ambulance is fielding a team — sign up and train with the crew.</p>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:1.5rem;">
+          <button class="hub-access-btn" onclick="window.open('https://seattlestairclimb.org','_blank')">Sign Up →</button>
+          <button class="hub-access-btn" style="background:rgba(180,79,255,0.08);border-color:rgba(180,79,255,0.3);color:var(--purple);">Contact Lisa →</button>
+        </div>
       </div>
       <div class="hub-stats">
-        <div class="hub-stat"><div class="hub-stat-num">47</div><div class="hub-stat-label">Resources</div></div>
-        <div class="hub-stat"><div class="hub-stat-num">12</div><div class="hub-stat-label">Protocols</div></div>
-        <div class="hub-stat"><div class="hub-stat-num">8</div><div class="hub-stat-label">CE Credits</div></div>
-        <div class="hub-stat"><div class="hub-stat-num">24/7</div><div class="hub-stat-label">Access</div></div>
+        <div class="hub-stat"><div class="hub-stat-num">69</div><div class="hub-stat-label">Floors</div></div>
+        <div class="hub-stat"><div class="hub-stat-num">Apr</div><div class="hub-stat-label">Month</div></div>
+        <div class="hub-stat"><div class="hub-stat-num">WA</div><div class="hub-stat-label">State</div></div>
+        <div class="hub-stat"><div class="hub-stat-num">Open</div><div class="hub-stat-label">Sign-up</div></div>
       </div>
     </div>
-    <div class="hub-grid" id="hub-grid"></div>
+
+    <!-- EVENTS GRID -->
+    <div class="hub-grid" id="events-grid"></div>
+
   </div>
   <footer>
     <div class="footer-logo">THE SOAP BOX</div>
@@ -858,28 +878,53 @@ function renderArchive() {
     </div>`).join('');
 }
 
-/* ── info hub ── */
-const hubCards = [
-  { icon:'🩸', tag:'Trauma',        title:'Hemorrhage Control',     desc:'Tourniquet application, wound packing, junctional bleeding. Updated for TCCC guidelines.', link:'View protocols →' },
-  { icon:'🧠', tag:'Neuro',         title:'Stroke Recognition',      desc:'BEFAST, dispatch prompts, LAMS scoring, and direct-to-CT pathways.', link:'View guide →' },
-  { icon:'💊', tag:'Pharmacology',  title:'Field Drug Reference',    desc:'Quick-access dosing cards. Sorted by situation. WA State protocols.', link:'Open reference →' },
-  { icon:'🔥', tag:'Hazmat',        title:'Chemical Exposure',       desc:'Scene safety, decon priorities, antidote protocols, and documentation essentials.', link:'View guide →' },
-  { icon:'🏕️', tag:'Street Med',    title:'Street Medicine Toolkit', desc:'Unhoused patient assessment, wound care in austere environments, frostbite/exposure.', link:'Explore toolkit →' },
-  { icon:'🎓', tag:'CE Credits',    title:'CE Opportunities',        desc:'Current continuing education listings curated for WA state EMS recertification.', link:'Find CE →' },
-  { icon:'🚨', tag:'MCI',           title:'Mass Casualty Reference', desc:'SALT triage, ICS basics, unit positioning, and communication templates.', link:'View reference →' },
-  { icon:'📋', tag:'Documentation', title:'PCR Tips & Templates',    desc:'Common documentation pitfalls, language templates, and narrative structuring.', link:'Get templates →' },
-  { icon:'❤️', tag:'Wellness',      title:'Peer Support Resources',  desc:'CISM, peer support contacts, and mental health resources for EMS in WA.', link:'Find support →' },
+/* ── events ── */
+const events = [
+  { cat:'fitness',   icon:'🏔️', tag:'Fitness',    status:'open',    date:'Apr 2026',  title:'Scott Firefighter Stair Climb',       desc:'69 floors of Columbia Center in full turnout gear. Team forming now — training plan provided.',           signup:'https://seattlestairclimb.org',  contact:'' },
+  { cat:'fitness',   icon:'🏃', tag:'Fitness',    status:'open',    date:'Jun 2026',  title:'Portland Stair Climb',                desc:'Historic U.S. Bancorp Tower climb. 43 floors. Crew team forming — all fitness levels welcome.',            signup:'https://www.portlandstairclimb.org', contact:'' },
+  { cat:'fitness',   icon:'🚴', tag:'Fitness',    status:'soon',    date:'Aug 2026',  title:'Ragnar Relay — Pacific Northwest',    desc:'Team overnight relay run across the PNW. Looking for 6–12 crew members. Contact Lisa to join.',             signup:'',                               contact:'lisa@olympicambulance.com' },
+  { cat:'team',      icon:'⚾', tag:'Team Sports', status:'open',   date:'May 2026',  title:'Olympic Ambulance Softball Team',     desc:'Company slow-pitch softball league. Games every other Saturday. All skill levels. Sign up by April 15.',   signup:'https://forms.google.com',       contact:'' },
+  { cat:'team',      icon:'🏐', tag:'Team Sports', status:'soon',   date:'Jul 2026',  title:'Summer Volleyball League',            desc:'Casual beach volleyball at Norm Dicks Park. Forming a crew team for the Port Orchard summer league.',        signup:'',                               contact:'lisa@olympicambulance.com' },
+  { cat:'wildland',  icon:'🔥', tag:'Wildland',   status:'open',   date:'Jun 2026',  title:'Wildland EMS Team Sign-Up',           desc:'Olympic Ambulance Wildland EMS team is recruiting. Requires Red Card certification. Applications open now.', signup:'https://forms.google.com',       contact:'lisa@olympicambulance.com' },
+  { cat:'wildland',  icon:'🏕️', tag:'Wildland',   status:'soon',   date:'Jul 2026',  title:'Wilderness First Responder Refresh',  desc:'WFR recertification course. 3-day field course in the Olympic Peninsula. Subsidized for crew members.',       signup:'',                               contact:'lisa@olympicambulance.com' },
+  { cat:'community', icon:'🩸', tag:'Community',  status:'open',   date:'Ongoing',   title:'Blood Drive Volunteer',               desc:'Represent Olympic Ambulance at Kitsap County blood drives. Sign up for one or more drive dates.',             signup:'https://www.redcrossblood.org',  contact:'' },
+  { cat:'community', icon:'🫀', tag:'Community',  status:'open',   date:'Ongoing',   title:'Stop the Bleed — Community Instructor', desc:'Certified instructors needed to teach Stop the Bleed to schools, businesses, and community groups.',      signup:'',                               contact:'lisa@olympicambulance.com' },
+  { cat:'social',    icon:'🍖', tag:'Social',     status:'open',   date:'Jul 2026',  title:'Annual Crew BBQ & Cookoff',           desc:'Summer BBQ at Waterman Waterfront. Ricky\'s Rubs on deck. Bring your best dish. Families welcome.',          signup:'https://forms.google.com',       contact:'' },
+  { cat:'social',    icon:'🎳', tag:'Social',     status:'soon',   date:'Mar 2026',  title:'Crew Bowling Night',                  desc:'Off-shift bowling at All Star Lanes in Bremerton. Teams of 4. Prizes for best and worst scorer.',             signup:'',                               contact:'lisa@olympicambulance.com' },
+  { cat:'training',  icon:'🎓', tag:'Training',   status:'open',   date:'Apr 2026',  title:'ACLS Renewal — Group Session',        desc:'Group ACLS renewal scheduled with instructor discount for Olympic Ambulance employees. 8-hour course.',      signup:'https://forms.google.com',       contact:'' },
+  { cat:'training',  icon:'📋', tag:'Training',   status:'soon',   date:'May 2026',  title:'EMS Documentation & PCR Workshop',   desc:'Hands-on workshop for cleaner, faster PCR narrative writing. CE credit pending approval.',                    signup:'',                               contact:'lisa@olympicambulance.com' },
 ];
-function renderHub() {
-  document.getElementById('hub-grid').innerHTML = hubCards.map(c => `
+
+const statusLabel = { open:'Accepting Sign-ups', soon:'Coming Soon', full:'Full — Waitlist' };
+const statusColor = { open:'var(--neon-green,#39ff8a)', soon:'var(--neon-amber,#ffb800)', full:'var(--muted)' };
+
+let activeEventFilter = 'all';
+function filterEvents(cat, el) {
+  activeEventFilter = cat;
+  document.querySelectorAll('#event-filter-row .filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderEvents();
+}
+function renderEvents() {
+  const items = activeEventFilter === 'all' ? events : events.filter(e => e.cat === activeEventFilter);
+  document.getElementById('events-grid').innerHTML = items.map(e => `
     <div class="hub-card">
       <div class="hub-card-top">
-        <div class="hub-icon">${c.icon}</div>
-        <div class="hub-tag">${c.tag}</div>
+        <div class="hub-icon">${e.icon}</div>
+        <div class="hub-tag">${e.tag}</div>
       </div>
-      <h3>${c.title}</h3>
-      <p>${c.desc}</p>
-      <div class="hub-link">${c.link}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:0.1rem;">
+        <h3 style="font-size:0.95rem;">${e.title}</h3>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.4rem;">
+        <span style="font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);">${e.date}</span>
+        <span style="font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:0.08em;text-transform:uppercase;color:${statusColor[e.status]};opacity:0.9;">${statusLabel[e.status]}</span>
+      </div>
+      <p>${e.desc}</p>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:auto;padding-top:0.75rem;border-top:1px solid var(--border);">
+        ${e.signup ? `<a href="${e.signup}" target="_blank" style="font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--pink);opacity:0.8;text-decoration:none;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8">Sign Up →</a>` : ''}
+        ${e.contact ? `<a href="mailto:${e.contact}" style="font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--purple);opacity:0.8;text-decoration:none;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8">Contact to Join →</a>` : ''}
+      </div>
     </div>`).join('');
 }
 
@@ -899,10 +944,10 @@ const slides = [
     cta: 'Shop the Drop →'
   },
   {
-    color: 's-pink', letter: 'A', tag: 'Info Hub', title: 'Against Medical Advice',
-    desc: 'Because knowing your stuff is the best revenge. Protocols, field drug references, street medicine toolkits, CE listings, MCI guides, PCR templates, peer support resources — curated for WA state EMS providers.',
-    preview: '<strong>Featured:</strong> Stop the Bleed Field Guide — hemorrhage control from tourniquet application to wound packing.',
-    cta: 'Explore the Hub →'
+    color: 's-pink', letter: 'A', tag: 'Events', title: 'Against Medical Advice',
+    desc: "Because the best thing for you is getting out there. Stair climbs, softball, wildland EMS team sign-ups, community volunteering, crew BBQs, and more — everything happening off the clock at Olympic Ambulance.",
+    preview: '<strong>Up next:</strong> Scott Firefighter Stair Climb team forming now. Softball sign-ups open through April 15.',
+    cta: 'See All Events →'
   },
   {
     color: 's-teal', letter: 'P', tag: 'Connect', title: 'Patch Me Through',
@@ -931,7 +976,7 @@ function setSlide(idx) {
   document.getElementById('sb-cta').textContent    = s.cta;
 }
 
-renderMerch(); renderArchive(); renderHub();
+renderMerch(); renderArchive(); renderEvents();
 </script>
 </body>
 </html>
