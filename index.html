@@ -433,6 +433,88 @@
   .info-block-label { font-family: 'Space Mono', monospace; font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.3rem; }
   .info-block-val { font-size: 0.88rem; color: var(--text); font-weight: 500; }
   .info-block-sub { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+  /* ════════════════════════════════
+     MOBILE RESPONSIVE
+  ════════════════════════════════ */
+  @media (max-width: 768px) {
+
+    /* nav */
+    nav { padding: 0 1rem; height: 54px; gap: 0.5rem; }
+    .nav-subtitle { display: none; }
+    .nav-links { gap: 0.15rem; }
+    .nav-btn { font-size: 0.5rem; padding: 4px 8px; letter-spacing: 0.05em; }
+
+    /* hero */
+    .hero { min-height: 44vh; padding: 2rem 1.25rem 1.5rem; }
+    .hero-title { font-size: clamp(2.8rem, 14vw, 5rem); }
+    .hero-title .the { font-size: 0.42em; letter-spacing: 0.2em; }
+    .hero-sub { font-size: 0.85rem; margin-bottom: 1.25rem; }
+
+    /* neon divider */
+    .neon-divider { height: 1.5px; }
+
+    /* below fold */
+    .below-fold { padding: 2.5rem 1.25rem 3rem; }
+    .below-fold-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+
+    /* carousel */
+    .carousel-track { gap: 0.6rem; }
+    .ov-card { padding: 1.1rem 1rem; }
+    .ov-letter { font-size: 1.8rem; }
+    .ov-title { font-size: 1.05rem; }
+    .ov-desc-short { font-size: 0.72rem; }
+
+    /* sidebar */
+    .sidebar { padding: 1.75rem 1.25rem; position: static; }
+    .sidebar-letter { font-size: 4rem; }
+    .sidebar-title { font-size: 1.6rem; }
+    .sidebar-desc { font-size: 0.82rem; }
+
+    /* section wraps */
+    .section-wrap { padding: 2.5rem 1.25rem; }
+    .page-header { padding: 2.5rem 1.25rem 2rem; }
+
+    /* section headings */
+    .section-h { font-size: clamp(2rem, 8vw, 3rem); }
+
+    /* newsletter */
+    .newsletter-wrap { gap: 2rem; }
+    .signup-box { position: static; }
+
+    /* merch */
+    .merch-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.85rem; }
+    .merch-img { font-size: 3.5rem; }
+    .merch-filter-row { gap: 0.4rem; }
+    .filter-pill { font-size: 0.55rem; padding: 4px 12px; }
+
+    /* events */
+    .hub-featured { padding: 1.5rem; gap: 1.5rem; }
+    .hub-featured h2 { font-size: 1.8rem; }
+    .hub-stats { grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+    .hub-stat { padding: 0.6rem 0.4rem; }
+    .hub-stat-num { font-size: 1.4rem; }
+    .hub-stat-label { font-size: 0.5rem; }
+    .hub-grid { grid-template-columns: 1fr; gap: 0.85rem; }
+    .hub-card { padding: 1.25rem; }
+
+    /* contact */
+    .social-grid { grid-template-columns: 1fr; gap: 0.65rem; }
+    .contact-box { padding: 1.5rem 1.25rem; }
+    .info-blocks { margin-top: 1.25rem; }
+
+    /* footer */
+    footer { flex-direction: column; align-items: flex-start; gap: 0.75rem; padding: 1.5rem 1.25rem; }
+    .footer-links { flex-wrap: wrap; gap: 1rem; }
+  }
+
+  @media (max-width: 480px) {
+    .nav-btn { font-size: 0.45rem; padding: 4px 6px; }
+    .hero-title { font-size: clamp(2.4rem, 16vw, 4rem); }
+    .merch-grid { grid-template-columns: 1fr 1fr; }
+    .hub-stats { grid-template-columns: repeat(2, 1fr); }
+    .social-grid { grid-template-columns: 1fr 1fr; }
+  }
 </style>
 </head>
 <body>
