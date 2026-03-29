@@ -115,9 +115,9 @@
   ════════════════════════════════ */
   .hero {
     position: relative; overflow: hidden;
-    min-height: calc(100vh - 62px);
+    min-height: 52vh;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; padding: 4rem 2rem 2rem;
+    text-align: center; padding: 3rem 2rem 2rem;
   }
   .hero-bg {
     position: absolute; inset: 0; z-index: 0;
@@ -155,13 +155,13 @@
 
   .hero-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(4.5rem, 13vw, 10rem); line-height: 0.88; letter-spacing: 0.03em; margin-bottom: 0.35em;
+    font-size: clamp(3rem, 9vw, 7rem); line-height: 0.88; letter-spacing: 0.03em; margin-bottom: 0.25em;
   }
   .hero-title .the { color: var(--muted); display: block; font-size: 0.45em; letter-spacing: 0.25em; margin-bottom: 0.1em; }
-  .hero-title .soap { display: block; background: linear-gradient(100deg, var(--purple) 0%, var(--blue) 50%, var(--pink) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 20px rgba(180,79,255,0.4)); }
+  .hero-title .soap { display: block; background: linear-gradient(100deg, var(--purple) 0%, var(--blue) 50%, var(--pink) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 26px rgba(180,79,255,0.52)); }
   .hero-title .box { color: var(--text); display: block; }
 
-  .hero-sub { font-weight: 300; font-size: 1rem; color: var(--muted); line-height: 1.75; max-width: 480px; margin: 0 auto 3rem; }
+  .hero-sub { font-weight: 300; font-size: 0.95rem; color: var(--muted); line-height: 1.7; max-width: 480px; margin: 0 auto 1.5rem; }
   .hero-sub em { color: var(--text); font-style: normal; font-weight: 400; }
 
   /* ── NEON DIVIDER ── */
@@ -181,7 +181,7 @@
   /* ── BELOW-FOLD SECTION ── */
   .below-fold {
     background: var(--bg2); position: relative; z-index: 1;
-    padding: 4rem 2rem 5rem;
+    padding: 5rem 2rem 6rem;
   }
   .below-fold-inner {
     max-width: 1100px; margin: 0 auto;
@@ -258,7 +258,7 @@
   /* ── SIDEBAR ── */
   .sidebar {
     background: var(--bg3); border: 1px solid var(--border); border-radius: 16px;
-    padding: 2.25rem 2rem; position: sticky; top: 82px;
+    padding: 2.75rem 2.25rem; position: sticky; top: 82px;
     transition: all 0.35s ease;
   }
   .sidebar-letter {
